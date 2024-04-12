@@ -1,0 +1,60 @@
+---
+- name: Import the PostgreSQL GPG key
+  rpm_key:
+    state: present
+    key: "https://download.postgresql.org/pub/repos/yum/keys/PGDG-RPM-GPG-KEY-RHEL"
+  register: postgresql_key
+
+- name: Show success message after importing PostgreSQL GPG key
+  ansible.builtin.debug:
+    msg: "PostgreSQL GPG key has been successfully imported."
+  when: postgresql_key is changed
+
+- name: Add the PostgreSQL repository
+  yum_repository:
+    name: PostgreSQL
+    description: PostgreSQL repo
+    file: pgdg
+    baseurl: "https://download.postgresql.org/pub/repos/yum/{{ postgresql_version }}/redhat/rhel-$releasever-$basearch"
+    gpgcheck: yes
+    gpgkey: "https://download.postgresql.org/pub/repos/yum/keys/PGDG-RPM-GPG-KEY-RHEL"
+  register: postgresql_repo
+
+- name: Show success message after adding PostgreSQL repository
+  ansible.builtin.debug:
+    msg: "PostgreSQL repository has been successfully added."
+  when: postgresql_repo is changed
+
+- name: Install PostgreSQL
+  yum:
+    name: "postgresql{{ postgresql_version }}-server"
+    state: present
+  register: postgresql_installation
+
+- name: Show success message after installing PostgreSQL
+  ansible.builtin.debug:
+    msg: "PostgreSQL has been successfully installed."
+  when: postgresql_installation is changed
+
+- name: Initialize the database
+  command: "/usr/pgsql-{{ postgresql_version }}/bin/postgresql-{{ postgresql_version }}-setup initdb"
+  args:
+    creates: "/var/lib/pgsql/{{ postgresql_version }}/data/PG_VERSION"
+  register: postgresql_db_init
+
+- name: Show success message after initializing PostgreSQL database
+  ansible.builtin.debug:
+    msg: "PostgreSQL database has been successfully initialized."
+  when: postgresql_db_init is changed
+
+- name: Ensure PostgreSQL is enabled and running
+  systemd:
+    name: postgresql-{{ postgresql_version }}
+    enabled: yes
+    state: started
+  register: postgresql_service
+
+- name: Show success message after enabling and starting PostgreSQL
+  ansible.builtin.debug:
+    msg: "PostgreSQL has been successfully enabled and started."
+  when: postgresql_service is changed

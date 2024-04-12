@@ -1,0 +1,32 @@
+---
+- name: Move and link configs for RedHat family
+  block:
+    - name: Move configs for Apache and Nginx (RedHat)
+      ansible.builtin.copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        remote_src: yes
+      loop:
+        - { src: './vizor-staging-project-configs/wordpress', dest: '/etc/httpd/conf.d/' }
+        - { src: './vizor-staging-project-configs/wordpress.conf', dest: '/etc/nginx/conf.d/' }
+        - { src: './vizor-staging-project-configs/joomla', dest: '/etc/httpd/conf.d/' }
+        - { src: './vizor-staging-project-configs/joomla.conf', dest: '/etc/nginx/conf.d/' }
+      register: move_result
+
+    - name: Show success message after moving configs for Apache and Nginx (RedHat)
+      ansible.builtin.debug:
+        msg: "Configs have been successfully moved for RedHat."
+      when: move_result.changed
+
+    - name: Remove vizor-staging-project-configs directory
+      file:
+        path: "./vizor-staging-project-configs"
+        state: absent
+      register: remove_result
+
+    - name: Show success message after removing vizor-staging-project-configs directory
+      ansible.builtin.debug:
+        msg: "The vizor-staging-project-configs directory has been successfully removed."
+      when: remove_result.changed
+  notify:
+    - Restart httpd

@@ -1,0 +1,3 @@
+.DS_Store
+roles/*/defaults/main.yml
+inventories/*/inventory.ini

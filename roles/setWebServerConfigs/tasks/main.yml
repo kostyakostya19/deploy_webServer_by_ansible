@@ -1,0 +1,30 @@
+---
+- block:
+  - name: Clone configs repository
+    git:
+      repo: 'https://github.com/vishnevayakostochka/configs.git'
+      dest: './configs'
+    become: yes
+    register: clone_result
+
+  - name: Show success message after cloning configs repository
+    ansible.builtin.debug:
+      msg: "configs repository has been successfully cloned."
+    when: clone_result.changed
+
+  - name: Include setup for RedHat
+    include_tasks: rhel.yml
+    when: ansible_os_family == "RedHat"
+  
+  - name: Include setup for Debian
+    include_tasks: deb.yml
+    when: ansible_os_family == "Debian"
+
+  rescue:
+    - debug:
+        msg: "--- setWebServerConfigs role completed with an error ---"
+
+  always:
+    - debug:
+        msg: "--- setWebServerConfigs role completed successfully ---"
+      when: ansible_failed_task is not defined

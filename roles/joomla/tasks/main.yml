@@ -1,0 +1,84 @@
+---
+- block:
+  - name: Check if Joomla installation already completed
+    stat:
+      path: /var/www/html/joomla/index.php
+    register: joomla_installed
+  
+  - name: Show message if Joomla is already installed
+    ansible.builtin.debug:
+      msg: "Joomla is already installed."
+    when: joomla_installed.stat.exists
+  
+  - name: Download Joomla if not installed
+    get_url:
+      url: https://downloads.joomla.org/cms/joomla5/5-0-3/Joomla_5-0-3-Stable-Full_Package.tar.gz
+      dest: /tmp/joomla.tar.gz
+    when: not joomla_installed.stat.exists
+    register: joomla_download
+    changed_when: joomla_download is changed
+  
+  - name: Show success message for Joomla download
+    ansible.builtin.debug:
+      msg: "Joomla package downloaded successfully."
+    when: joomla_download is changed and not joomla_installed.stat.exists
+  
+  - name: Create the joomla directory
+    ansible.builtin.file:
+      path: /var/www/html/joomla
+      state: directory
+    register: joomla_dir
+
+  - name: Show success message after creating joomla dir
+    ansible.builtin.debug:
+      msg: "joomla dir has been successfully created"
+    when: joomla_dir.changed
+
+  - name: Extract Joomla archive
+    unarchive:
+      src: /tmp/joomla.tar.gz
+      dest: /var/www/html/joomla
+      remote_src: yes
+    when: not joomla_installed.stat.exists
+    register: joomla_extraction
+    changed_when: joomla_extraction is changed
+  
+  - name: Show success message for Joomla extraction
+    ansible.builtin.debug:
+      msg: "Joomla package extracted successfully."
+    when: joomla_extraction is changed
+  
+  - name: Set ownership to Apache user
+    file:
+      path: /var/www/html/joomla
+      owner: apache
+      group: apache
+      recurse: yes
+    register: joomla_ownership
+    changed_when: joomla_ownership is changed
+  
+  - name: Show success message for setting Joomla ownership
+    ansible.builtin.debug:
+      msg: "Ownership for Joomla files set to Apache user successfully."
+    when: joomla_ownership is changed
+  
+  - name: Remove temporary Joomla archive
+    file:
+      path: /tmp/joomla.tar.gz
+      state: absent
+    register: joomla_archive_removal
+    changed_when: joomla_archive_removal is changed
+  
+  - name: Show success message for removing Joomla archive
+    ansible.builtin.debug:
+      msg: "Temporary Joomla archive removed successfully."
+    when: joomla_archive_removal is changed
+
+  rescue:
+    - debug:
+        msg: "--- disableSELinux role completed with an error ---"
+  
+  always:
+    - debug:
+        msg: "--- disableSELinux role completed successfully ---"
+      when: ansible_failed_task is not defined

@@ -1,0 +1,21 @@
+---
+- name: set_webServer
+  hosts: web_servers
+  gather_facts: yes
+#  any_erros_fatal: true
+  become: yes 
+  vars_files:
+    - vars/production.yml
+  roles:
+    - requiredSoftware
+    - "{{ web_server_engine }}"
+    - changeApache2Port
+    - "{{ site_engine }}"
+    - "{{ database }}"
+    - "{{ proxy }}"
+    - wordpress
+    - joomla
+    - setWebServerConfigs
+    - disableSELinux
+    - "{{ restart_proxy }}"
+    - sendTgMessage

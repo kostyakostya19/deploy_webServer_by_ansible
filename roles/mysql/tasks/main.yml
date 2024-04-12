@@ -1,0 +1,18 @@
+---
+- block:
+  - name: Include setup for RedHat
+    include_tasks: rhel.yml
+    when: ansible_os_family == "RedHat"
+  
+  - name: Include setup for Debian
+    include_tasks: deb.yml
+    when: ansible_os_family == "Debian"
+
+  rescue:
+    - debug:
+        msg: "--- db role completed with an error ---"
+
+  always:
+    - debug:
+        msg: "--- db role completed successfully ---"
+      when: ansible_failed_task is not defined

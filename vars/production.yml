@@ -1,0 +1,6 @@
+---
+web_server_engine: apache2
+site_engine: php
+database: postgresql
+proxy: nginx
+restart_proxy: restartNginx

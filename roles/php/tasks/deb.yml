@@ -1,0 +1,17 @@
+---
+- name: Install PHP and extensions
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  loop:
+    - php
+    - php-fpm
+    - php-mysql
+  register: php_installation
+
+- name: Show success message after installing PHP and extensions
+  ansible.builtin.debug:
+    msg: "PHP and extensions have been successfully installed on {{ ansible_distribution }}."
+  when: 
+    - php_installation is changed

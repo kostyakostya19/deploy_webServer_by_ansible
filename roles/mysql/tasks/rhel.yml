@@ -1,0 +1,23 @@
+---
+- name: Install MySQL
+  yum:
+    name: mysql-server
+    state: present
+  register: mysql_installation
+
+- name: Show success message after installing MySQL
+  ansible.builtin.debug:
+    msg: "MySQL has been successfully installed."
+  when: mysql_installation is changed
+
+- name: Ensure MySQL is enabled and running
+  systemd:
+    name: mysqld
+    enabled: yes
+    state: started
+  register: mysql_service
+
+- name: Show success message after enabling and starting MySQL
+  ansible.builtin.debug:
+    msg: "MySQL has been successfully enabled and started."
+  when: mysql_service is changed

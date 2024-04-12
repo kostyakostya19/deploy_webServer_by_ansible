@@ -1,0 +1,24 @@
+---
+- name: Change Apache2 port to 8080
+  lineinfile:
+    path: /etc/apache2/ports.conf
+    regexp: '^Listen'
+    line: 'Listen 8080'
+    state: present
+  register: apache2_port_change
+
+- name: Show success message after changing Apache2 port to 8080
+  ansible.builtin.debug:
+    msg: "Apache2 port has been successfully changed to 8080"
+  when: apache2_port_change is changed
+
+- name: Restart Apache2 to apply port change
+  systemd:
+    name: apache2
+    state: restarted
+  register: apache2_restart
+
+- name: Show success message after restarting Apache2
+  ansible.builtin.debug:
+    msg: "Apache2 has been successfully restarted to apply port change"
+  when: apache2_restart is changed

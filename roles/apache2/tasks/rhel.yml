@@ -1,0 +1,23 @@
+---
+- name: Install httpd
+  yum:
+    name: httpd
+    state: present
+  register: httpd_installation
+
+- name: Show success message after installing httpd
+  ansible.builtin.debug:
+    msg: "httpd has been successfully installed"
+  when: httpd_installation is changed
+
+- name: Ensure httpd is enabled and running
+  systemd:
+    name: httpd
+    enabled: yes
+    state: started
+  register: httpd_enabling
+
+- name: Show success message after enabling httpd
+  ansible.builtin.debug:
+    msg: "httpd has been successfully enabled and started"
+  when: httpd_enabling is changed

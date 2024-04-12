@@ -1,0 +1,46 @@
+---
+- name: Add the PostgreSQL repository
+  apt_repository:
+    repo: "deb http://apt.postgresql.org/pub/repos/apt/ {{ ansible_distribution_release }}-pgdg main"
+    state: present
+  register: postgresql_repo
+
+- name: Show success message after adding PostgreSQL repository
+  ansible.builtin.debug:
+    msg: "PostgreSQL repository has been successfully added."
+  when: postgresql_repo is changed
+
+- name: Import the repository signing key
+  apt_key:
+    url: "https://www.postgresql.org/media/keys/ACCC4CF8.asc"
+    state: present
+  register: postgresql_key
+
+- name: Show success message after importing PostgreSQL repository key
+  ansible.builtin.debug:
+    msg: "PostgreSQL repository signing key has been successfully imported."
+  when: postgresql_key is changed
+
+- name: Install PostgreSQL
+  apt:
+    name: "postgresql-{{ postgresql_version }}"
+    state: present
+    update_cache: yes
+  register: postgresql_installation
+
+- name: Show success message after installing PostgreSQL
+  ansible.builtin.debug:
+    msg: "PostgreSQL has been successfully installed."
+  when: postgresql_installation is changed
+
+- name: Ensure PostgreSQL is enabled and running
+  service:
+    name: postgresql
+    state: started
+    enabled: yes
+  register: postgresql_service
+
+- name: Show success message after enabling and starting PostgreSQL
+  ansible.builtin.debug:
+    msg: "PostgreSQL has been successfully enabled and started."
+  when: postgresql_service is changed

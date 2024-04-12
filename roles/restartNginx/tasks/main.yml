@@ -1,0 +1,35 @@
+---
+- block:
+  - name: Test Nginx configuration
+    command: nginx -t
+    when: selinux_disabled is defined and selinux_disabled  
+    register: nginx_config_test
+  
+  - name: Show success message after conf testing Nginx configuration
+    ansible.builtin.debug:
+      msg: "Nginx configuration has been successfully tested."
+    when:
+      - nginx_config_test is changed
+  
+  - name: Reload Nginx
+    service:
+      name: nginx
+      state: reloaded
+    when:
+      - selinux_disabled
+    register: nginx_reload
+  
+  - name: Show success message after reloading Nginx
+    ansible.builtin.debug:
+      msg: "Nginx has been successfully reloaded"
+    when:
+      - nginx_reload is changed
+
+  rescue:
+    - debug:
+        msg: "--- restartNginx role completed with an error ---"
+
+  always:
+    - debug:
+        msg: "--- restartNginx role completed successfully ---"
+      when: ansible_failed_task is not defined

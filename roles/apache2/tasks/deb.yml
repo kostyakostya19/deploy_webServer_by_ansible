@@ -1,0 +1,24 @@
+---
+- name: Install Apache2
+  apt:
+    name: apache2
+    state: present
+    update_cache: yes
+  register: apache2_installation
+
+- name: Show success message after installing apache2
+  ansible.builtin.debug:
+    msg: "Apache2 has been successfully installed"
+  when: apache2_installation is changed
+
+- name: Ensure Apache2 is enabled and running
+  service:
+    name: apache2
+    enabled: yes
+    state: started
+  register: apache2_enabling
+
+- name: Show success message after enabling apache2
+  ansible.builtin.debug:
+    msg: "Apache2 has been successfully installed"
+  when: apache2_enabling is changed

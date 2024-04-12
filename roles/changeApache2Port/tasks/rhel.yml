@@ -1,0 +1,24 @@
+---
+- name: Change httpd port to 8080
+  lineinfile:
+    path: /etc/httpd/conf/httpd.conf
+    regexp: '^Listen'
+    line: 'Listen 8080'
+    state: present
+  register: httpd_port_change
+
+- name: Show success message after changing httpd port to 8080
+  ansible.builtin.debug:
+    msg: "httpd port has been successfully changed to 8080"
+  when: httpd_port_change is changed
+
+- name: Restart httpd to apply port change
+  systemd:
+    name: httpd
+    state: restarted
+  register: httpd_restart
+
+- name: Show success message after restarting httpd
+  ansible.builtin.debug:
+    msg: "httpd has been successfully restarted to apply port change"
+  when: httpd_restart is changed

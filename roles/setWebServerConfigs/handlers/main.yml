@@ -1,0 +1,24 @@
+---
+- name: Restart Apache2
+  service:
+    name: apache2
+    state: restarted
+  when: ansible_os_family == "Debian"
+  register: apache_restart_result
+
+- name: Show success message after restarting Apache2
+  ansible.builtin.debug:
+    msg: "Apache2 has been successfully restarted."
+  when: apache_restart_result.changed and ansible_os_family == "Debian"
+
+- name: Restart httpd
+  service:
+    name: httpd
+    state: restarted
+  when: ansible_os_family == "RedHat"
+  register: httpd_restart_result
+
+- name: Show success message after restarting httpd
+  ansible.builtin.debug:
+    msg: "httpd has been successfully restarted."
+  when: httpd_restart_result.changed and ansible_os_family == "RedHat"

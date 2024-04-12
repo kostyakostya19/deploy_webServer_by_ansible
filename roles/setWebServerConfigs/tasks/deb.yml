@@ -1,0 +1,43 @@
+---
+- name: Move and link configs for deb family
+  block:
+    - name: Move configs for Apache and Nginx (deb)
+      ansible.builtin.copy:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        remote_src: yes
+      loop:
+        - { src: './configs/wordpress', dest: '/etc/apache2/sites-available/' }
+        - { src: './configs/wordpress.conf', dest: '/etc/nginx/sites-available/' }
+        - { src: './configs/joomla', dest: '/etc/apache2/sites-available/' }
+        - { src: './configs/joomla.conf', dest: '/etc/nginx/sites-available/' }
+      register: move_link_result
+
+    - name: Show success message after moving configs for Apache and Nginx (deb)
+      ansible.builtin.debug:
+        msg: "Configs have been successfully moved for deb"
+      when: move_link_result.changed
+
+    - name: Enable sites in Apache (deb)
+      command: a2ensite {{ item }}
+      loop:
+        - wordpress
+        - joomla
+      register: enable_result
+
+    - name: Show success message after enabling sites in Apache (deb)
+      ansible.builtin.debug:
+        msg: "Sites have been successfully enabled in Apache"
+      when: enable_result.changed
+
+    - name: Remove configs directory
+      file:
+        path: "./configs"
+        state: absent
+      register: remove_result
+
+    - name: Show success message after removing configs directory
+      ansible.builtin.debug:
+        msg: "The configs directory has been successfully removed."
+      when: remove_result.changed
+  notify: Restart apache2

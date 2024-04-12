@@ -1,0 +1,55 @@
+---
+- block:
+  - name: Check SELinux state
+    command: getenforce
+    register: selinux_status
+    changed_when: false
+    when: ansible_os_family == "RedHat"
+    ignore_errors: yes
+  
+  - name: Show current SELinux status
+    ansible.builtin.debug:
+      msg: "Current SELinux status is {{ selinux_status.stdout }}"
+    when: 
+      - ansible_os_family == "RedHat"
+      - selinux_status is defined
+  
+  - name: Disable SELinux
+    command: setenforce 0
+    when: 
+      - ansible_os_family == "RedHat"
+      - selinux_status.stdout != "Disabled"
+    register: selinux_disable_result
+    changed_when: selinux_disable_result.rc == 0
+    ignore_errors: true
+  
+  - name: Show SELinux disablement attempt result
+    ansible.builtin.debug:
+      msg: "Attempted to disable SELinux, result: {{ selinux_disable_result.rc == 0 | ternary('Successful', 'Failed') }}"
+    when: 
+      - ansible_os_family == "RedHat"
+      - selinux_disable_result is defined
+  
+  - name: Set flag if SELinux was successfully disabled
+    set_fact:
+      selinux_disabled: true
+    when: 
+      - selinux_disable_result is defined
+      - selinux_disable_result.rc == 0
+  
+  - name: Show final SELinux status if successfully disabled
+    ansible.builtin.debug:
+      msg: "SELinux has been successfully disabled"
+    when: 
+      - ansible_os_family == "RedHat"
+      - selinux_disabled is defined
+      - selinux_disabled
+
+  rescue:
+    - debug:
+        msg: "--- disableSELinux role completed with an error ---"
+  
+  always:
+    - debug:
+        msg: "--- disableSELinux role completed successfully ---"
+      when: ansible_failed_task is not defined

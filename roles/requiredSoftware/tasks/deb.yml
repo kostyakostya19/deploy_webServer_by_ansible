@@ -1,0 +1,13 @@
+---
+- name: Install required software
+  apt:
+    name:
+      - wget
+      - git
+    state: present
+  register: requiredSoftware
+
+- name: Show success message after installing requiredSoftware
+  ansible.builtin.debug:
+    msg: "requiredSoftware has been successfully installed"
+  when: requiredSoftware is changed

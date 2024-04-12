@@ -1,0 +1,24 @@
+---
+- name: Install Nginx
+  apt:
+    name: nginx
+    state: present
+    update_cache: yes
+  register: nginx_installation
+
+- name: Show success message after installing Nginx
+  ansible.builtin.debug:
+    msg: "Nginx has been successfully installed"
+  when: nginx_installation is changed
+
+- name: Ensure Nginx is enabled and running
+  service:
+    name: nginx
+    enabled: yes
+    state: started
+  register: nginx_service
+
+- name: Show success message after enabling and starting Nginx
+  ansible.builtin.debug:
+    msg: "Nginx has been successfully enabled and started"
+  when: nginx_service is changed

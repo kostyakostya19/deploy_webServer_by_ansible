@@ -1,0 +1,24 @@
+- name: Running send message to Telegram
+  block:
+    - name: Send message to Telegram
+      uri:
+        url: "https://api.telegram.org/bot{{ token }}/sendMessage"
+        method: POST
+        body_format: form-urlencoded
+        body:
+          chat_id: "{{ chat_id }}"
+          text: "The ansible-playbook completed successfully"
+      
+    - name: Show success message after sending message to Telegram
+      ansible.builtin.debug:
+        msg: "Message sent to Telegram successfully."
+
+
+  rescue:
+    - debug:
+        msg: "--- sendTgMessage role completed with an error ---"
+  
+  always:
+    - debug:
+        msg: "--- sendTgMessage role completed successfully ---"
+      when: ansible_failed_task is not defined

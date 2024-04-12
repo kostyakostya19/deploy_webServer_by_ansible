@@ -1,0 +1,18 @@
+---
+- block:
+  - name: install required software for rhel
+    include_tasks: rhel.yml
+    when: ansible_os_family == "RedHat"
+  
+  - name: install required software for deb
+    include_tasks: deb.yml
+    when: ansible_os_family == "Debian"
+
+  rescue:
+    - debug:
+        msg: "--- requiredSoftware role completed with an error ---"
+
+  always:
+    - debug:
+        msg: "--- requiredSoftware role completed successfully ---"
+      when: ansible_failed_task is not defined
